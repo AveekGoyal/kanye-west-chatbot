@@ -1,11 +1,18 @@
-const axios = require('axios');
-require('dotenv').config();
+import { OpenAI } from 'openai';
 
-async function getKanyeResponse(userMessage) {
-  const apiKey = process.env.OPENAI_API_KEY;
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ message: 'Method Not Allowed' });
+  }
+
+  const { userMessage } = req.body;
+
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
 
   try {
-    const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+    const response = await openai.chat.completions.create({
       model: 'gpt-4',
       messages: [
         {
@@ -17,21 +24,14 @@ async function getKanyeResponse(userMessage) {
           content: userMessage,
         },
       ],
-    }, {
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
     });
 
-    const botResponse = response.data.choices[0]?.message?.content || 'No response from bot';
+    const botResponse = response.choices[0]?.message?.content || 'No response from bot';
     console.log("Kanye Bot:", botResponse);
 
-    return botResponse;
+    res.status(200).json({ response: botResponse });
   } catch (error) {
     console.error('Error:', error);
-    throw error;
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 }
-
-module.exports = { getKanyeResponse };

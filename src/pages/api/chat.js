@@ -1,4 +1,4 @@
-import { getKanyeResponse } from '../chatbot.js';
+import { getKanyeResponse } from '../chatbot'; // Updated import path
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
